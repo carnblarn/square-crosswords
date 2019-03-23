@@ -1,6 +1,5 @@
 
-# Perfect Square Crosswords
-
+# Square Crossword Maker
 ![drake meme](https://i.imgur.com/FkXN7j2.jpg)
 
 Crossword makers on the web take in a small list of words and create crosswords that contain all the words. Because all the words have to be used, the number of intersection points is usually very small and the generated crosswords look very amateur-ish compared to what you'd find in a publication like the New York Times.
