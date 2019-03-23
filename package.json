@@ -1,0 +1,26 @@
+{
+  "name": "square-crosswords",
+  "version": "0.1.0",
+  "description": "create square crosswords",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carnye/square-crosswords.git"
+  },
+  "keywords": [
+    "crosswords"
+  ],
+  "author": "Sean Carney",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/carnye/square-crosswords/issues"
+  },
+  "homepage": "https://github.com/carnye/square-crosswords#readme",
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "typescript": "^3.3.4000"
+  }
+}
