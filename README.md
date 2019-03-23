@@ -13,4 +13,4 @@ This program does something a little differnet. It takes in a word list of any s
 - Run `index.ts`. The program will output any found crosswords to the console and save them to a `crosswords.json` file when every successful one is found
 
 ## Notes
-- Because of the nature of the recursion in here, the run-time performance is O(pretty bad). From my experience word lists of about 5000-6000 were ideal and anything much longer than 10000 will take too long to finish. The algorithm is much faster than a brute-force attempt, but it's still a tedious process to test this many words.
+- Because of the nature of the recursion in here, the run-time performance is `O(pretty bad)`. From my experience word lists of about 5000-6000 were ideal and anything much longer than 10000 will take too long to finish. The algorithm is much faster than a brute-force attempt, but it's still a tedious process to test this many words.
