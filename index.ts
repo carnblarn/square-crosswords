@@ -3,7 +3,7 @@ import { filter, map, chain } from 'lodash';
 import { Trie } from './trie';
 
 const WORD_LENGTH = 5;
-const wordsFile = './testData';
+const wordsFile = './perfdata';
 
 const words = require(wordsFile);
 
@@ -40,7 +40,7 @@ for (let i = 0; i < wordsOfLength.length; i++) {
 }
 
 function checkCrosswordStart(crosswordInProgress: crossword) {
-    for (let i = 0; i < WORD_LENGTH - 1; i++) {
+    for (let i = 0; i < WORD_LENGTH; i++) {
         const startOfWord = [];
         for (let j = 0; j < crosswordInProgress.length; j++) {
             startOfWord.push(crosswordInProgress[j][i]);
@@ -129,5 +129,4 @@ for (let h = 0; h < wordsOfLength.length; h++) {
     }
 
     testColumn([], columnWords, 0);
-    process.exit();
 }
