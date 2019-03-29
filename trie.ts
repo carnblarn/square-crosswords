@@ -121,9 +121,10 @@ Trie.prototype.countWords = function() {
 Trie.prototype.getWords = function() {
     var words = [];
     var word = '';
-    this._getWords(this.root, words, words, word);
+    this._getWords(this.root, words, word);
     return words;
 };
+
 Trie.prototype._getWords = function(node, words, word) {
     for (var child in node.children) {
         if (node.children.hasOwnProperty(child)) {
@@ -133,6 +134,35 @@ Trie.prototype._getWords = function(node, words, word) {
             }
             this._getWords(node.children[child], words, word);
             word = word.substring(0, word.length - 1);
+        }
+    }
+};
+
+Trie.prototype.getWordsForStartingArray = function(start: Array<string>) {
+    const words = [];
+    const word = start;
+    let node = this.root;
+    for (let i = 0; i < start.length; i++) {
+        if (!node.children[start[i]]) {
+            break;
+        }
+        node = node.children[start[i]];
+    }
+    this._getWordsForStartingArray(node, words, word);
+    return words;
+};
+Trie.prototype._getWordsForStartingArray = function(node, words, word) {
+    for (var child in node.children) {
+        if (node.children.hasOwnProperty(child)) {
+            const newWord = [...word, child];
+            if (node.children[child].isWord) {
+                words.push(newWord);
+            }
+            this._getWordsForStartingArray(
+                node.children[child],
+                words,
+                newWord
+            );
         }
     }
 };
@@ -185,6 +215,8 @@ var trie = new Trie();
 trie.add('one');
 trie.add('otf');
 trie.add('otb');
+trie.add('atb');
+// console.log(trie.getWordsForStartingArray(['o']));
 // trie.add('two');
 // trie.add('fifth');
 // trie.add('fifty');

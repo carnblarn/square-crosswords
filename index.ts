@@ -1,13 +1,12 @@
 import { writeFileSync } from 'fs';
-import { filter, map, chain } from 'lodash';
+import { filter, map, chain, startsWith } from 'lodash';
 import { Trie } from './trie';
+import { Crossword } from './crossword';
 
 const WORD_LENGTH = 5;
-const wordsFile = './perfdata';
+const wordsFile = './perfData';
 
 const words = require(wordsFile);
-
-type crossword = Array<Array<string>>; // [['a', 'a', 'a'], ['b', 'b', 'b'], ['c', 'c', 'c']]
 
 function cleanWord(word: string) {
     let newWord = word.toLowerCase();
@@ -39,13 +38,11 @@ for (let i = 0; i < wordsOfLength.length; i++) {
     wordsTrie.add(wordsOfLength[i].cleanedWord);
 }
 
-function checkCrosswordStart(crosswordInProgress: crossword) {
+// for a with <= max rows, this will check the columns for whether those words start to exi
+function checkStartOfCrosswordColumns(crossword: Crossword) {
     for (let i = 0; i < WORD_LENGTH; i++) {
-        const startOfWord = [];
-        for (let j = 0; j < crosswordInProgress.length; j++) {
-            startOfWord.push(crosswordInProgress[j][i]);
-        }
-        if (!wordsTrie.containsArrayStart(startOfWord)) {
+        const column = crossword.getColumn(i);
+        if (!wordsTrie.containsArrayStart(column)) {
             return false;
         }
     }
@@ -53,31 +50,26 @@ function checkCrosswordStart(crosswordInProgress: crossword) {
     return true;
 }
 
-function getWordsForCrossword(crossword: crossword) {
-    const words = [];
-    for (let i = 0; i < crossword.length; i++) {
-        const word = crossword[i].join('');
-        words.push(word);
-    }
-    for (let i = 0; i < crossword.length; i++) {
-        let word = '';
-        for (let j = 0; j < crossword.length; j++) {
-            word += crossword[j][i];
+function checkStartOfCrosswordRows(crossword: Crossword) {
+    for (let i = 0; i < WORD_LENGTH; i++) {
+        const row = crossword.getRow(i);
+        if (!wordsTrie.containsArrayStart(row)) {
+            return false;
         }
-        words.push(word);
     }
-    return words;
+    return true;
 }
+
 const validCrosswords = [];
 
-function validCrossword(crossword: crossword) {
-    const wordsInCrossword = getWordsForCrossword(crossword);
+function validCrossword(crossword: Crossword) {
+    const wordsInCrossword = crossword.getAllWords();
     const uniqueWords = new Set(wordsInCrossword).size;
     // crosswords that contain the same word multiple times are ignored
     if (uniqueWords === WORD_LENGTH * 2) {
         validCrosswords.push(crossword);
         console.log('Number of crosswords found:', validCrosswords.length);
-        console.log(crossword);
+        crossword.print();
         const exports = {
             crosswords: validCrosswords,
         };
@@ -89,21 +81,45 @@ function validCrossword(crossword: crossword) {
     }
 }
 
-function testColumn(crossword: crossword, columnWords, columnNum: number) {
-    for (let i = 0; i < columnWords[columnNum].length; i++) {
-        const columnWord = columnWords[columnNum][i];
-        const nextCrossword = [...crossword, columnWord];
-        const check = checkCrosswordStart(nextCrossword);
-
+function addWordToNextRow(crossword: Crossword, rowNumber: number) {
+    const startOfRow = crossword.getRow(rowNumber);
+    const filteredWords = wordsTrie.getWordsForStartingArray(startOfRow);
+    // crossword.print();
+    for (let i = 0; i < filteredWords.length; i++) {
+        const rowWord = filteredWords[i];
+        const nextCrossword = new Crossword(WORD_LENGTH, crossword);
+        nextCrossword.setRow(rowWord, rowNumber);
+        const check = checkStartOfCrosswordColumns(nextCrossword);
         if (!check) {
             continue;
         }
-        if (columnNum >= WORD_LENGTH - 1) {
+        if (rowNumber >= WORD_LENGTH - 1) {
             validCrossword(nextCrossword);
         } else {
-            const nextNum = columnNum + 1;
-            testColumn(nextCrossword, columnWords, nextNum);
+            const nextNum = rowNumber;
+            // this seems inefficient that the words words is never narrowed down
+            // addWordToNextRow(nextCrossword, filteredWords, nextNum);
+            addWordToNextColumn(nextCrossword, nextNum);
         }
+    }
+}
+
+function addWordToNextColumn(crossword: Crossword, columnNumber: number) {
+    const startOfColumn = crossword.getColumn(columnNumber);
+    // crossword.print();
+    const filteredWords = wordsTrie.getWordsForStartingArray(startOfColumn);
+    for (let i = 0; i < filteredWords.length; i++) {
+        const columnWord = filteredWords[i];
+        const nextCrossword = new Crossword(WORD_LENGTH, crossword);
+        nextCrossword.setColumn(columnWord, columnNumber);
+        const check = checkStartOfCrosswordRows(nextCrossword);
+        if (!check) {
+            continue;
+        }
+
+        const nextNum = columnNumber + 1;
+        // this seems inefficient that the words words is never narrowed down
+        addWordToNextRow(nextCrossword, nextNum);
     }
 }
 
@@ -112,21 +128,8 @@ for (let h = 0; h < wordsOfLength.length; h++) {
         console.log(`${h}/${wordsOfLength.length} starting words tested`);
     }
     const startingWord = wordsOfLength[h].cleanedWord;
-    const crossword = [startingWord.split('')];
-    const columnWords = [];
-    for (let i = 0; i < crossword[0].length; i++) {
-        const topLetter = crossword[0][i];
-        const wordsInThatColumn = map(
-            filter(
-                wordsOfLength,
-                ({ cleanedWord }) =>
-                    cleanedWord.substr(0, 1) === topLetter &&
-                    cleanedWord !== startingWord
-            ),
-            ({ cleanedWord }) => cleanedWord.split('')
-        );
-        columnWords.push(wordsInThatColumn);
-    }
-
-    testColumn([], columnWords, 0);
+    // const startingWord = 'merch';
+    const crossword = new Crossword(WORD_LENGTH);
+    crossword.setRow(startingWord.split(''), 0);
+    addWordToNextColumn(crossword, 0);
 }
